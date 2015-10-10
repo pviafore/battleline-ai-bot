@@ -4,6 +4,10 @@ defmodule GameEngine do
        engine
    end
 
+   def get_state(engine) do
+      {:ok, %{}}
+   end
+
    defp recv do
 
    end
