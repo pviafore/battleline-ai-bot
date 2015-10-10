@@ -19,11 +19,11 @@ defmodule BattlelineBotTest do
 
   defp start_engine name \\ "TestBot" do
     strategy = TestStrategy.start name
-    GameEngine.start self, strategy
+    BattlelineEngine.start self, strategy
   end
 
   defp send_and_expect engine, message, expected do
-    GameEngine.send_command engine, message
+    BattlelineEngine.send_command engine, message
     receive do
        {:message, message} -> assert message == expected
        _ -> assert false, "Invalid message received"
@@ -31,7 +31,7 @@ defmodule BattlelineBotTest do
   end
 
   defp check_state engine, expected_state do
-    {:ok, state} = GameEngine.get_state engine
+    {:ok, state} = BattlelineEngine.get_state engine
     assert state == expected_state
   end
 
@@ -60,6 +60,6 @@ defmodule BattlelineBotTest do
        engine = start_engine
        send_and_expect engine, "player north name", "player north TestBot"
        check_state engine, %{direction: "north"}
-
   end
+
 end
