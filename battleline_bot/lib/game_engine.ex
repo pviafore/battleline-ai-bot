@@ -54,7 +54,8 @@ defmodule GameEngine do
   defmacro action_request field, message, val do
     quote do
       send var!(strategy), {unquote(message), var!(outputter), unquote(val)}
-      put_in var!(state),[unquote(field)], unquote(val)
+      settings_update unquote(field), unquote(val)
+      #put_in var!(state),[unquote(field)], unquote(val)
     end
   end
 
