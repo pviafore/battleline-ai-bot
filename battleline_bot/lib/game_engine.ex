@@ -5,20 +5,31 @@ defmodule GameEngine do
      import GameEngine
 
      @fields []
-
+     @action_requests []
      @before_compile GameEngine
    end
   end
 
-  defmacro field(f) do
-     quote do
-        @fields [unquote(f) | @fields]
-     end
+  defmacro action_request field_name, request, pattern do
+    quote do
+      @fields [unquote(field_name) | @fields]
+      @action_requests [{unquote(field_name), unquote(request), unquote(pattern)} | @action_requests]
+    end
   end
 
   defmacro __before_compile__(env) do
     quote do
+
+      for req <- @action_requests do
+        def parse ["player", direction, "name"], outputter, strategy, state do
+           send strategy, {:player_name, outputter, direction}
+           %{ state | direction: direction}
+        end
+      end
+
       defp initial_state, do: (for field <- @fields, into: %{}, do: {field, ""} )
+
+
 
       def start outputter,strategy do
            {:ok, engine} = Task.start_link(fn->recv(outputter, strategy, initial_state) end)
@@ -34,11 +45,6 @@ defmodule GameEngine do
 
        def send_command engine,command do
           send engine, {:command, command}
-       end
-
-       defp parse ["player", direction, "name"], outputter, strategy, state do
-          send strategy, {:player_name, outputter, direction}
-          %{ state | direction: direction}
        end
 
        defp recv outputter, strategy, state do
@@ -58,5 +64,5 @@ end
 defmodule BattlelineEngine do
     use GameEngine
 
-    GameEngine.field :direction
+    GameEngine.action_request :direction, :a, :b
 end
