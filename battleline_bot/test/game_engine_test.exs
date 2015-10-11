@@ -37,11 +37,11 @@ defmodule BattlelineBotTest do
 
 
   def initial_state do
-    %{direction: ""}
+    %{direction: "", colors: []}
   end
   test "can check initial state" do
     engine = start_engine
-    check_state engine, %{direction: ""}
+    check_state engine, initial_state
   end
 
   test "can request player name" do
@@ -56,9 +56,15 @@ defmodule BattlelineBotTest do
   end
 
   test "state is updated with direction when player name is given" do
-       engine = start_engine
-       send_and_expect engine, "player north name", "player north TestBot"
-       check_state engine, %{initial_state | direction: "north"}
+     engine = start_engine
+     send_and_expect engine, "player north name", "player north TestBot"
+     check_state engine, %{initial_state | direction: "north"}
+  end
+
+  test "state is updated with colors" do
+    engine = start_engine
+    BattlelineEngine.send_command engine, "colors 1 2 3 4 5 6"
+    check_state engine, %{initial_state | colors: ["1", "2", "3", "4", "5", "6"]}
   end
 
 end
