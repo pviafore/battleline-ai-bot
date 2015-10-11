@@ -55,13 +55,18 @@ defmodule GameEngine do
     quote do
       send var!(strategy), {unquote(message), var!(outputter), unquote(val)}
       settings_update unquote(field), unquote(val)
-      #put_in var!(state),[unquote(field)], unquote(val)
     end
   end
 
   defmacro settings_update field, val do
     quote do
       put_in var!(state), [unquote(field)], unquote(val)
+    end
+  end
+
+  defmacro info_transform field, val, transformer do
+    quote do
+      put_in var!(state), [unquote(field)], unquote(transformer).(unquote(val))
     end
   end
 end
@@ -72,7 +77,17 @@ defmodule BattlelineEngine do
     GameEngine.field :direction, ""
     GameEngine.field :colors, []
 
+    defp make_card [color,number] do
+      {color, String.to_integer number}
+    end
+    defp make_card_from_string card do
+      String.split(card, ",")
+      |> make_card
+    end
+
+
     def parse(["player", direction, "name"], outputter, strategy, state), do: action_request(:direction, :player_name, direction)
-    def parse(["colors" | colors], outputter, strategy, state), do: settings_update(:colors, colors)
+    def parse(["colors", c1, c2, c3, c4, c5, c6], outputter, strategy, state), do: settings_update(:colors, [c1, c2, c3, c4, c5, c6])
+    def parse(["player", _direction, "hand" | cards], outputter, strategy, state), do: info_transform(:hand, cards, fn c -> Enum.map(c, &make_card_from_string/1) end)
 
 end

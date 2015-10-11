@@ -61,10 +61,20 @@ defmodule BattlelineBotTest do
      check_state engine, %{initial_state | direction: "north"}
   end
 
-  test "state is updated with colors" do
+  def send_and_check_state message, field, expected do
     engine = start_engine
-    BattlelineEngine.send_command engine, "colors 1 2 3 4 5 6"
-    check_state engine, %{initial_state | colors: ["1", "2", "3", "4", "5", "6"]}
+    BattlelineEngine.send_command engine, message
+    new_state = put_in initial_state, [field], expected
+    check_state engine, new_state
+  end
+
+  test "state is updated with colors" do
+    send_and_check_state "colors 1 2 3 4 5 6", :colors, ["1", "2", "3", "4", "5", "6"]
+    send_and_check_state "colors 6 5 4 3 2 1", :colors, ["6", "5", "4", "3", "2", "1"]
+  end
+
+  test "can get player cards" do
+    send_and_check_state "player north hand r,1 r,2 r,3 r,4 r,5 r,6 r,7", :hand, [{"r", 1}, {"r", 2}, {"r", 3}, {"r", 4}, {"r", 5}, {"r", 6}, {"r", 7}]
   end
 
 end
