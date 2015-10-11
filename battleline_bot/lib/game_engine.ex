@@ -5,31 +5,22 @@ defmodule GameEngine do
      import GameEngine
 
      @fields []
-     @action_requests []
      @before_compile GameEngine
    end
   end
 
-  defmacro action_request field_name, request, pattern do
+  defmacro field field_name do
     quote do
       @fields [unquote(field_name) | @fields]
-      @action_requests [{unquote(field_name), unquote(request), unquote(pattern)} | @action_requests]
     end
   end
 
-  defmacro __before_compile__(env) do
+  defmacro action_request field, request
+
+  defmacro __before_compile__(_env) do
+
     quote do
-
-      for req <- @action_requests do
-        def parse ["player", direction, "name"], outputter, strategy, state do
-           send strategy, {:player_name, outputter, direction}
-           %{ state | direction: direction}
-        end
-      end
-
       defp initial_state, do: (for field <- @fields, into: %{}, do: {field, ""} )
-
-
 
       def start outputter,strategy do
            {:ok, engine} = Task.start_link(fn->recv(outputter, strategy, initial_state) end)
@@ -59,10 +50,21 @@ defmodule GameEngine do
        end
     end
   end
+  # I hate how this has unhygenic variables, but this means that you have to have outputter, straetgy and state
+  # if I can figure out how to quote a pattern match
+  defmacro action_request field, message, val do
+    quote do
+      send var!(strategy), {unquote(message), var!(outputter), unquote(val)}
+      put_in var!(state),[unquote(field)], unquote(val)
+    end
+  end
 end
 
 defmodule BattlelineEngine do
     use GameEngine
 
-    GameEngine.action_request :direction, :a, :b
+    GameEngine.field :direction
+
+    def parse(["player", direction, "name"], outputter, strategy, state), do: action_request(:direction, :player_name, direction)
+
 end
