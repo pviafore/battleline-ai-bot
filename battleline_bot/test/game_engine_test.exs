@@ -35,11 +35,10 @@ defmodule BattlelineBotTest do
     assert state == expected_state
   end
 
-  test "the truth" do
-    assert 1 + 1 == 2
+
+  def initial_state do
+    %{direction: ""}
   end
-
-
   test "can check initial state" do
     engine = start_engine
     check_state engine, %{direction: ""}
@@ -59,7 +58,7 @@ defmodule BattlelineBotTest do
   test "state is updated with direction when player name is given" do
        engine = start_engine
        send_and_expect engine, "player north name", "player north TestBot"
-       check_state engine, %{direction: "north"}
+       check_state engine, %{initial_state | direction: "north"}
   end
 
 end
