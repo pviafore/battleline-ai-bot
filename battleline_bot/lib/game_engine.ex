@@ -54,17 +54,17 @@ defmodule GameEngine do
   defmacro action_request field, message, val do
     quote do
       send var!(strategy), {unquote(message), var!(outputter), unquote(val)}
-      settings_update unquote(field), unquote(val)
+      simple_update unquote(field), unquote(val)
     end
   end
 
-  defmacro settings_update field, val do
+  defmacro simple_update field, val do
     quote do
       put_in var!(state), [unquote(field)], unquote(val)
     end
   end
 
-  defmacro info_transform field, val, transformer do
+  defmacro transform_update field, val, transformer do
     quote do
       put_in var!(state), [unquote(field)], unquote(transformer).(unquote(val))
     end
@@ -87,7 +87,8 @@ defmodule BattlelineEngine do
 
 
     def parse(["player", direction, "name"], outputter, strategy, state), do: action_request(:direction, :player_name, direction)
-    def parse(["colors", c1, c2, c3, c4, c5, c6], outputter, strategy, state), do: settings_update(:colors, [c1, c2, c3, c4, c5, c6])
-    def parse(["player", _direction, "hand" | cards], outputter, strategy, state), do: info_transform(:hand, cards, fn c -> Enum.map(c, &make_card_from_string/1) end)
-
+    def parse(["colors", c1, c2, c3, c4, c5, c6], _outputter, _strategy, state), do: simple_update(:colors, [c1, c2, c3, c4, c5, c6])
+    def parse(["player", _direction, "hand" | cards], _outputter, _strategy, state), do: transform_update(:hand, cards, fn c -> Enum.map(c, &make_card_from_string/1) end)
+    def parse(["flag", "claim-status", f1, f2, f3, f4, f5, f6, f7, f8, f9], _outputter, _strategy, state), do: simple_update(:claim, [f1, f2, f3, f4, f5, f6, f7, f8, f9])
+    def parse(["opponent", "play", flag, card], _outputter, _strategy, state), do: simple_update(:last_move, {String.to_integer(flag), make_card_from_string(card)})
 end

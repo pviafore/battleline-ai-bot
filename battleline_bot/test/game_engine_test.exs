@@ -77,4 +77,12 @@ defmodule BattlelineBotTest do
     send_and_check_state "player north hand r,1 r,2 r,3 r,4 r,5 r,6 r,7", :hand, [{"r", 1}, {"r", 2}, {"r", 3}, {"r", 4}, {"r", 5}, {"r", 6}, {"r", 7}]
   end
 
+  test "can get flag claim status" do
+    send_and_check_state "flag claim-status unclaimed north south unclaimed north south unclaimed north south", :claim, ["unclaimed", "north", "south", "unclaimed", "north", "south", "unclaimed", "north", "south"]
+  end
+
+  test "can get opponent play" do
+     send_and_check_state "opponent play 1 r,2", :last_move, {1, {"r", 2}}
+  end
+
 end
