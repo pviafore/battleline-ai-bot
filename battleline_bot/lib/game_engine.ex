@@ -76,6 +76,9 @@ defmodule BattlelineEngine do
 
     GameEngine.field :direction, ""
     GameEngine.field :colors, []
+    GameEngine.field :last_move, ""
+    GameEngine.field :hand, []
+    GameEngine.field :claim, []
 
     defp make_card [color,number] do
       {color, String.to_integer number}
@@ -91,4 +94,5 @@ defmodule BattlelineEngine do
     def parse(["player", _direction, "hand" | cards], _outputter, _strategy, state), do: transform_update(:hand, cards, fn c -> Enum.map(c, &make_card_from_string/1) end)
     def parse(["flag", "claim-status", f1, f2, f3, f4, f5, f6, f7, f8, f9], _outputter, _strategy, state), do: simple_update(:claim, [f1, f2, f3, f4, f5, f6, f7, f8, f9])
     def parse(["opponent", "play", flag, card], _outputter, _strategy, state), do: simple_update(:last_move, {String.to_integer(flag), make_card_from_string(card)})
+    def parse(["go", "play-card"], outputter, strategy, state), do: action_request(:play_card, :play_card, nil)
 end

@@ -7,6 +7,7 @@ defmodule TestStrategy do
   def recv name do
      receive do
         {:player_name, sender, direction} -> send sender, {:message, "player " <> direction <> " " <> name}
+        {:play_card, sender, _} -> send sender, {:message, "play 1 b,2"}
         _ -> nil
      end
      recv name
@@ -37,7 +38,7 @@ defmodule BattlelineBotTest do
 
 
   def initial_state do
-    %{direction: "", colors: []}
+    %{direction: "", colors: [], last_move: "", hand: [], claim: []}
   end
   test "can check initial state" do
     engine = start_engine
@@ -83,6 +84,11 @@ defmodule BattlelineBotTest do
 
   test "can get opponent play" do
      send_and_check_state "opponent play 1 r,2", :last_move, {1, {"r", 2}}
+  end
+
+  test "can request action" do
+    engine = start_engine
+    send_and_expect engine, "go play-card", "play 1 b,2"
   end
 
 end
