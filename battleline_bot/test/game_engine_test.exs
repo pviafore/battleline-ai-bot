@@ -38,7 +38,7 @@ defmodule BattlelineBotTest do
 
 
   def initial_state do
-    %{direction: "", colors: [], last_move: "", hand: [], claim: []}
+    %{direction: "", colors: [], last_move: "", hand: [], claim: [], flag_cards: [{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]}] }
   end
   test "can check initial state" do
     engine = start_engine
@@ -89,6 +89,16 @@ defmodule BattlelineBotTest do
   test "can request action" do
     engine = start_engine
     send_and_expect engine, "go play-card", "play 1 b,2"
+  end
+
+  test "can get flag-info" do
+    engine = start_engine
+    BattlelineEngine.send_command engine, "flag 1 cards north r,1"
+    new_state = put_in initial_state, [:flag_cards], [{[{"r",1}],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]}]
+    check_state engine, new_state
+    BattlelineEngine.send_command engine, "flag 3 cards south r,3 b,3 g,5"
+    newer_state = put_in new_state, [:flag_cards], [{[{"r",1}],[]},{[],[]},{[],[{"r",3}, {"b", 3}, {"g",5} ]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]},{[],[]}]
+    check_state engine, newer_state
   end
 
 end
