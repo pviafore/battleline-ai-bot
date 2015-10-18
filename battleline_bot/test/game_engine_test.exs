@@ -1,16 +1,16 @@
 defmodule TestStrategy do
-   def start name do
-     {:ok, strategy} = Task.start_link(fn->recv(name) end)
+   def start name, sender do
+     {:ok, strategy} = Task.start_link(fn->recv(name, sender) end)
      strategy
   end
 
-  def recv name do
+  def recv name, sender do
      receive do
-        {:player_name, sender, direction} -> send sender, {:message, "player " <> direction <> " " <> name}
-        {:play_card, sender, _} -> send sender, {:message, "play 1 b,2"}
+        {:player_name, direction} -> send sender, {:message, "player " <> direction <> " " <> name}
+        {:play_card,  _} -> send sender, {:message, "play 1 b,2"}
         _ -> nil
      end
-     recv name
+     recv name, sender
   end
 
 end
@@ -19,8 +19,8 @@ defmodule BattlelineBotTest do
   use ExUnit.Case
 
   defp start_engine name \\ "TestBot" do
-    strategy = TestStrategy.start name
-    BattlelineEngine.start self, strategy
+    strategy = TestStrategy.start name, self
+    BattlelineEngine.start strategy
   end
 
   defp send_and_expect engine, message, expected do

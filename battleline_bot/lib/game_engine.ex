@@ -21,8 +21,8 @@ defmodule GameEngine do
     quote do
       defp initial_state, do: (for {field, initial} <- @fields, into: %{}, do: {field, initial} )
 
-      def start outputter,strategy do
-           {:ok, engine} = Task.start_link(fn->recv(outputter, strategy, initial_state) end)
+      def start strategy do
+           {:ok, engine} = Task.start_link(fn->recv( strategy, initial_state) end)
            engine
        end
 
@@ -37,15 +37,15 @@ defmodule GameEngine do
           send engine, {:command, command}
        end
 
-       defp recv outputter, strategy, state do
+       defp recv strategy, state do
           receive do
             {:command, command} ->
                commands = String.split command
-               new_state = parse commands, outputter, strategy, state
-               recv outputter, strategy, new_state
+               new_state = parse commands, strategy, state
+               recv strategy, new_state
             {:state, sender} -> send sender, state
           end
-          recv outputter, strategy, state
+          recv strategy, state
        end
     end
   end
@@ -53,7 +53,7 @@ defmodule GameEngine do
   # if I can figure out how to quote a pattern match
   defmacro action_request field, message, val do
     quote do
-      send var!(strategy), {unquote(message), var!(outputter), unquote(val)}
+      send var!(strategy), {unquote(message), unquote(val)}
       simple_update unquote(field), unquote(val)
     end
   end
@@ -107,12 +107,12 @@ defmodule BattlelineEngine do
     defp make_cards_from_string(cards), do: Enum.map(cards, &make_card_from_string/1)
 
 
-    def parse(["player", direction, "name"], outputter, strategy, state), do: action_request(:direction, :player_name, direction)
-    def parse(["colors", c1, c2, c3, c4, c5, c6], _outputter, _strategy, state), do: simple_update(:colors, [c1, c2, c3, c4, c5, c6])
-    def parse(["player", _direction, "hand" | cards], _outputter, _strategy, state), do: transform_update(:hand, cards, &make_cards_from_string/1)
-    def parse(["flag", "claim-status", f1, f2, f3, f4, f5, f6, f7, f8, f9], _outputter, _strategy, state), do: simple_update(:claim, [f1, f2, f3, f4, f5, f6, f7, f8, f9])
-    def parse(["opponent", "play", flag, card], _outputter, _strategy, state), do: simple_update(:last_move, {String.to_integer(flag), make_card_from_string(card)})
-    def parse(["go", "play-card"], outputter, strategy, state), do: action_request(:play_card, :play_card, nil)
-    def parse(["flag", flag, "cards", direction | cards], _outputter, _strategy, state), do: transform_update(:flag_cards, {flag, direction, cards}, update_flag(state))
+    def parse(["player", direction, "name"], strategy, state), do: action_request(:direction, :player_name, direction)
+    def parse(["colors", c1, c2, c3, c4, c5, c6], _strategy, state), do: simple_update(:colors, [c1, c2, c3, c4, c5, c6])
+    def parse(["player", _direction, "hand" | cards],  _strategy, state), do: transform_update(:hand, cards, &make_cards_from_string/1)
+    def parse(["flag", "claim-status", f1, f2, f3, f4, f5, f6, f7, f8, f9], _strategy, state), do: simple_update(:claim, [f1, f2, f3, f4, f5, f6, f7, f8, f9])
+    def parse(["opponent", "play", flag, card], _strategy, state), do: simple_update(:last_move, {String.to_integer(flag), make_card_from_string(card)})
+    def parse(["go", "play-card"], strategy, state), do: action_request(:play_card, :play_card, nil)
+    def parse(["flag", flag, "cards", direction | cards], _strategy, state), do: transform_update(:flag_cards, {flag, direction, cards}, update_flag(state))
 
 end
