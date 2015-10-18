@@ -5,6 +5,7 @@ defmodule BattlelineBot.Mixfile do
     [app: :battleline_bot,
      version: "0.0.1",
      elixir: "~> 1.0",
+     escript: escript_config,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]
@@ -29,4 +30,9 @@ defmodule BattlelineBot.Mixfile do
   defp deps do
     []
   end
+
+  def escript_config do
+    [main_module: Bot]
+  end
+
 end

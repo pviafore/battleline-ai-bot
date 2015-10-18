@@ -8,7 +8,7 @@ defmodule CommandOutputter do
       receive do
          {:message, message} ->
                IO.puts message
-         {:error, msg} -> nil
+         {:error, _} -> nil
          _ -> nil
       end
       send_input()

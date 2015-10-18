@@ -1,4 +1,5 @@
 BattlelineBot
 =============
+To run tests, execute mix test
 
-** TODO: Add description **
+To build an "executable" use mix escript.build
