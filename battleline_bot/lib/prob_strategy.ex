@@ -5,7 +5,7 @@ defmodule ProbStrategy do
   end
 
   defp get_card_to_play(state) do
-     "play 1 " <> GameHelper.card_to_string({"b", 2})
+     "play 1 " <> GameHelper.card_to_string(GameHelper.get_highest_card(state.hand))
   end
 
   def recv outputter do
