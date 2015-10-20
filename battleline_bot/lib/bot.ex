@@ -2,7 +2,7 @@ defmodule Bot do
    def main(_) do
 
       outputter = CommandOutputter.start()
-      strategy = DumbStrategy.start(outputter)
+      strategy = ProbStrategy.start(outputter)
       engine = BattlelineEngine.start(strategy)
       run_input_loop( engine)
    end
