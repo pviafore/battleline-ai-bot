@@ -1,2 +1,0 @@
-defmodule BattlelineBot do
-end
