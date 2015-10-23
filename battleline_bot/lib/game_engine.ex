@@ -112,7 +112,7 @@ defmodule BattlelineEngine do
     def parse(["player", _direction, "hand" | cards],  _strategy, state), do: transform_update(:hand, cards, &make_cards_from_string/1)
     def parse(["flag", "claim-status", f1, f2, f3, f4, f5, f6, f7, f8, f9], _strategy, state), do: simple_update(:claim, [f1, f2, f3, f4, f5, f6, f7, f8, f9])
     def parse(["opponent", "play", flag, card], _strategy, state), do: simple_update(:last_move, {String.to_integer(flag), make_card_from_string(card)})
-    def parse(["go", "play-card"], strategy, state), do: action_request(:play_card, :play_card, nil)
+    def parse(["go", "play-card"], strategy, state), do: action_request(:play_card, :play_card, state)
     def parse(["flag", flag, "cards", direction | cards], _strategy, state), do: transform_update(:flag_cards, {flag, direction, cards}, update_flag(state))
 
 end

@@ -11,6 +11,7 @@ defmodule ProbStrategy do
   def recv outputter do
      receive do
         {:player_name, direction} -> send outputter, {:message, "player " <> direction <> " ElixirBot"}
+        {:play_card, nil} -> IO.puts :stderr, "Who has nil?"
         {:play_card, state} -> send outputter, {:message, get_card_to_play state}
         _ -> nil
      end
