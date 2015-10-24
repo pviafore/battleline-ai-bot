@@ -28,7 +28,9 @@ defmodule BattlelineBot.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      {:comb, git: "https://github.com/tallakt/comb.git"}
+    ]
   end
 
   def escript_config do

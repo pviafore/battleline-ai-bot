@@ -1,5 +1,5 @@
 defmodule GameHelper do
-
+  import Comb
   def get_highest_card([]), do: nil
   def get_highest_card(cards), do: Enum.max_by cards,&(elem &1, 1)
 
@@ -26,8 +26,13 @@ defmodule GameHelper do
     end
   end
 
-  def get_highest_formation(formation_list) do
-     Enum.max_by(formation_list, &get_formation_strength/1)
+  def get_better_formation(f1, f2) do
+     Enum.max_by([f1, f2], &get_formation_strength/1)
+  end
+
+  def get_highest_formation(cards) when is_list(cards) do
+      #[{"r", 8}, {"r", 9}, {"r", 10}]
+      Enum.max_by(combinations(cards,3), &get_formation_strength/1)
   end
 
 end

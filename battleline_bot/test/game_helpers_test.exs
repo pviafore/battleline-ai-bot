@@ -44,8 +44,13 @@ defmodule GameHelpersTest do
        assert 108 == GameHelper.get_formation_strength [{"r", 1}, {"r", 5}, {"b", 2}]
     end
 
-    test "can get highest formation" do
-       assert [{"r", 10}, {"r", 9}, {"r", 8}] == GameHelper.get_highest_formation [[{"r", 3}, {"r", 9}, {"r", 8}], [{"r", 10}, {"r", 9}, {"r", 8}], [{"b", 7}, {"b", 9}, {"b", 8}]]
-       assert [{"b", 1}, {"b", 2}, {"b", 3}] == GameHelper.get_highest_formation [[{"b", 1}, {"b", 2}, {"b", 3}], [{"r", 10}, {"g", 10}, {"b", 10}], [{"b", 7}, {"b", 9}, {"b", 1}]]
+    test "can get better formation" do
+       assert [{"r", 10}, {"r", 9}, {"r", 8}] == GameHelper.get_better_formation [{"r", 10}, {"r", 9}, {"r", 8}], [{"b", 7}, {"b", 9}, {"b", 8}]
+       assert [{"b", 1}, {"b", 2}, {"b", 3}] == GameHelper.get_better_formation [{"b", 1}, {"b", 2}, {"b", 3}], [{"r", 10}, {"g", 10}, {"b", 10}]
+    end
+
+    test "can get highest formation by hand" do
+       assert [{"r", 8}, {"r", 9}, {"r", 10}] == GameHelper.get_highest_formation [{"r",1}, {"r", 2}, {"r",3},  {"r",8},  {"r",9},  {"r",10},  {"b",3}]
+       assert [{"r", 8}, {"b", 8}, {"g", 8}] == GameHelper.get_highest_formation [{"r",1}, {"r", 8}, {"r",3},  {"b",8},  {"g",9},  {"r",7},  {"g",8}]
     end
 end
