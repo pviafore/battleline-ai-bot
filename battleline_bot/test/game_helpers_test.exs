@@ -43,4 +43,9 @@ defmodule GameHelpersTest do
        assert 126 == GameHelper.get_formation_strength [{"g", 9}, {"b", 10}, {"b", 7}]
        assert 108 == GameHelper.get_formation_strength [{"r", 1}, {"r", 5}, {"b", 2}]
     end
+
+    test "can get highest formation" do
+       assert [{"r", 10}, {"r", 9}, {"r", 8}] == GameHelper.get_highest_formation [[{"r", 3}, {"r", 9}, {"r", 8}], [{"r", 10}, {"r", 9}, {"r", 8}], [{"b", 7}, {"b", 9}, {"b", 8}]]
+       assert [{"b", 1}, {"b", 2}, {"b", 3}] == GameHelper.get_highest_formation [[{"b", 1}, {"b", 2}, {"b", 3}], [{"r", 10}, {"g", 10}, {"b", 10}], [{"b", 7}, {"b", 9}, {"b", 1}]]
+    end
 end

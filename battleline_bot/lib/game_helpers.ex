@@ -26,4 +26,8 @@ defmodule GameHelper do
     end
   end
 
+  def get_highest_formation(formation_list) do
+     Enum.max_by(formation_list, &get_formation_strength/1)
+  end
+
 end
