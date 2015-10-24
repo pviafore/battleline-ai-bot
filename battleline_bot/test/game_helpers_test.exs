@@ -17,4 +17,30 @@ defmodule GameHelpersTest do
      cards = for color <- ["color1", "color2", "color3", "color4", "color5", "color6"], number <- 1..10, do: {color, number}
      assert cards = GameHelper.get_cards()
    end
+
+   test "can get straight flush points" do
+      assert 527 == GameHelper.get_formation_strength [{"r", 10}, {"r", 9}, {"r", 8}]
+      assert 506 == GameHelper.get_formation_strength [{"b", 2}, {"b", 3}, {"b", 1}]
+   end
+
+
+    test "can get three of a kind points" do
+       assert 427 == GameHelper.get_formation_strength [{"b", 9}, {"r", 9}, {"g", 9}]
+       assert 403 == GameHelper.get_formation_strength [{"b", 1}, {"r", 1}, {"b", 1}]
+    end
+
+    test "can get flush points" do
+       assert 316 == GameHelper.get_formation_strength [{"b", 9}, {"b", 6}, {"b", 1}]
+       assert 304 == GameHelper.get_formation_strength [{"r", 1}, {"r", 1}, {"r", 2}]
+    end
+
+    test "can get straight points" do
+       assert 224 == GameHelper.get_formation_strength [{"g", 9}, {"b", 8}, {"b", 7}]
+       assert 206 == GameHelper.get_formation_strength [{"r", 1}, {"r", 3}, {"b", 2}]
+    end
+
+    test "can get host points" do
+       assert 126 == GameHelper.get_formation_strength [{"g", 9}, {"b", 10}, {"b", 7}]
+       assert 108 == GameHelper.get_formation_strength [{"r", 1}, {"r", 5}, {"b", 2}]
+    end
 end
