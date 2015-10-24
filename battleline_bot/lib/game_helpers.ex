@@ -30,9 +30,10 @@ defmodule GameHelper do
      Enum.max_by([f1, f2], &get_formation_strength/1)
   end
 
-  def get_highest_formation(cards) when is_list(cards) do
-      #[{"r", 8}, {"r", 9}, {"r", 10}]
-      Enum.max_by(combinations(cards,3), &get_formation_strength/1)
+  def get_highest_formation(hand \\[],  cards) when is_list(cards) do
+      cards_left = 3 - Enum.count(hand)
+      card_possibilities = for card_combo <- combinations(cards,cards_left), do: Enum.concat(hand, card_combo)
+      Enum.max_by(card_possibilities, &get_formation_strength/1)
   end
 
 end
