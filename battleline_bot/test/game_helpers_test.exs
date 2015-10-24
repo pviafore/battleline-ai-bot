@@ -12,4 +12,9 @@ defmodule GameHelpersTest do
    test "can convert card to string" do
       assert "b,2" == GameHelper.card_to_string({"b",2})
    end
+
+   test "can get all cards" do
+     cards = for color <- ["color1", "color2", "color3", "color4", "color5", "color6"], number <- 1..10, do: {color, number}
+     assert cards = GameHelper.get_cards()
+   end
 end
