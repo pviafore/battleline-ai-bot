@@ -15,14 +15,13 @@ defmodule GameHelpersTest do
 
    test "can get all cards" do
      cards = for color <- ["color1", "color2", "color3", "color4", "color5", "color6"], number <- 1..10, do: {color, number}
-     assert cards = GameHelper.get_cards()
+     assert cards == GameHelper.get_cards()
    end
 
    test "can get straight flush points" do
       assert 527 == GameHelper.get_formation_strength [{"r", 10}, {"r", 9}, {"r", 8}]
       assert 506 == GameHelper.get_formation_strength [{"b", 2}, {"b", 3}, {"b", 1}]
    end
-
 
     test "can get three of a kind points" do
        assert 427 == GameHelper.get_formation_strength [{"b", 9}, {"r", 9}, {"g", 9}]
@@ -64,5 +63,23 @@ defmodule GameHelpersTest do
 
     test "can get highest formation by hand with two" do
        assert [{"b", 9}, {"g", 9}, {"r", 9}] == GameHelper.get_highest_formation [{"b",9}, {"g", 9}], [{"r", 2}, {"r",3},  {"r",8},  {"r",9}, {"b",3}]
+    end
+
+    defp initial_state do
+       %{claim: (for _ <- 1..9, do: "unclaimed")}
+    end
+
+    defp claim state, flag, claimer do
+      %{ state | :claim => List.replace_at(state.claim, flag, claimer)}
+    end
+
+    test "can pick best flag with best card from best formation given a hand" do
+       assert {2, {"r", 10}} == GameHelper.get_move initial_state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}]
+       assert {2, {"b", 9}} == GameHelper.get_move initial_state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"y",5}, {"b",3}]
+    end
+
+    test "can pick best flag with best card from best formation given a hand when flag is claimed" do
+       state = claim initial_state, 2, :north
+       assert {3, {"r", 10}} == GameHelper.get_move state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}]
     end
 end

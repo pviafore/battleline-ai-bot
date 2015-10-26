@@ -30,10 +30,31 @@ defmodule GameHelper do
      Enum.max_by([f1, f2], &get_formation_strength/1)
   end
 
-  def get_highest_formation(hand \\[],  cards) when is_list(cards) do
-      cards_left = 3 - Enum.count(hand)
-      card_possibilities = for card_combo <- combinations(cards,cards_left), do: Enum.concat(hand, card_combo)
+  def get_highest_formation(existing \\ [],  cards) when is_list(cards) do
+      cards_left = 3 - Enum.count(existing)
+      card_possibilities = for card_combo <- combinations(cards,cards_left), do: Enum.concat(existing, card_combo)
       Enum.max_by(card_possibilities, &get_formation_strength/1)
+  end
+
+  defp is_claimed state, flag do
+     Enum.at(state.claim, flag) != "unclaimed"
+  end
+
+  defp get_flag_weights state do
+    [0.8, 0.9, 1, 1, 1, 1, 1, 0.9, 0.8]
+    |> Enum.with_index
+    |> Enum.map fn {elem, index} -> if is_claimed(state, index) do 0 else elem end end
+  end
+
+  defp get_flag state do
+     flag_weights = get_flag_weights state
+     Enum.find_index(flag_weights, &(&1 == Enum.max(flag_weights)))
+  end
+
+  def get_move state, cards do
+      card = get_highest_formation(cards) |> get_highest_card
+      flag = get_flag state
+      {flag, card}
   end
 
 end
