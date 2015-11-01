@@ -66,7 +66,7 @@ defmodule GameHelpersTest do
     end
 
     defp initial_state do
-       %{claim: (for _ <- 1..9, do: "unclaimed")}
+       %{claim: (for _ <- 1..9, do: "unclaimed"), flag_cards: (for _ <- 1..9, do: {[],[]}), direction: :north}
     end
 
     defp claim state, flag, claimer do
@@ -81,5 +81,23 @@ defmodule GameHelpersTest do
     test "can pick best flag with best card from best formation given a hand when flag is claimed" do
        state = claim initial_state, 2, :north
        assert {3, {"r", 10}} == GameHelper.get_move state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}]
+    end
+
+    defp update_flag_state flag_cards, :north, cards do
+        {cards, elem(flag_cards, 1)}
+    end
+
+    defp update_flag_state flag_cards, :south, cards do
+        {elem(flag_cards, 0), cards}
+    end
+
+    defp place_cards state, direction, flag, cards do
+        %{ state | :flag_cards => (List.replace_at(state.flag_cards, flag, update_flag_state(Enum.at(state.flag_cards, flag), direction, cards)))}
+
+    end
+
+    test "can pick best flag when first flag is full" do
+        state = place_cards initial_state, :north, 2, [{"r", 1}, {"r", 2}, {"r", 3}]
+        assert {3, {"r", 10}} == GameHelper.get_move state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}]
     end
 end

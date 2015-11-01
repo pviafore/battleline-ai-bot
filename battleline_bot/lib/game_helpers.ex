@@ -43,7 +43,19 @@ defmodule GameHelper do
   defp get_flag_weights state do
     [0.8, 0.9, 1, 1, 1, 1, 1, 0.9, 0.8]
     |> Enum.with_index
-    |> Enum.map fn {elem, index} -> if is_claimed(state, index) do 0 else elem end end
+    |> Enum.map fn {elem, index} -> if is_invalid_flag(state, index) do 0 else elem end end
+  end
+
+  defp is_invalid_flag(state, flag) do
+     is_claimed(state,flag) or is_full(state, flag)
+  end
+
+  defp is_full(state, flag) do
+    length(get_flags(state, state.direction, flag)) == 3
+  end
+
+  defp get_flags state, :north, flag do
+      elem(Enum.at(state.flag_cards, flag), 0)
   end
 
   defp get_flag state do
