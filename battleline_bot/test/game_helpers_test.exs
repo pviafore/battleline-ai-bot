@@ -108,5 +108,6 @@ defmodule GameHelpersTest do
     test "can pick flag with best chance" do
            state = place_cards initial_state, :north, 3, [{"r", 1}, {"r", 2}]
            assert {3, {"r", 3}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
+           assert {2, {"b", 10}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"z", 2}, {"z",3},  {"g",8},  {"b",10}, {"b",3}])
     end
 end
