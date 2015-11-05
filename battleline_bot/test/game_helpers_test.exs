@@ -110,4 +110,12 @@ defmodule GameHelpersTest do
            assert {3, {"r", 3}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
            assert {2, {"b", 10}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"z", 2}, {"z",3},  {"g",8},  {"b",10}, {"b",3}])
     end
+
+    test "will pick a flag that has two neighbors over best flag" do
+      state = initial_state |> claim(6, :north) |> claim(7, :north) |> add_hand([{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
+      assert {5, {"r", 10}} == GameHelper.get_move state
+      new_state = state |> claim(0, :north) |> claim(2, :north) |> claim(5, :south)
+      assert {1, {"r", 10}} == GameHelper.get_move new_state
+
+    end
 end

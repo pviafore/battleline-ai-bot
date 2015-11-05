@@ -37,13 +37,38 @@ defmodule GameHelper do
   end
 
   defp is_claimed state, flag do
-     Enum.at(state.claim, flag) != "unclaimed"
+     get_claim(state,flag) != "unclaimed"
+  end
+
+  defp get_claim(state, flag), do: Enum.at(state.claim, flag)
+
+  defp get_neighbor_weight(state, index), do: (if state.direction == get_claim(state, index) do 1 else 0 end)
+
+  defp get_neighbor_weight(state, index, :right), do: get_neighbor_weight(state, index + 1) + get_neighbor_weight(state, index+2)
+  defp get_neighbor_weight(state, index, :left) ,do: get_neighbor_weight(state, index - 1) + get_neighbor_weight(state, index-2)
+  defp get_neighbor_weight(state, index, :both) ,do: get_neighbor_weight(state, index - 1) + get_neighbor_weight(state, index+1)
+
+  defp get_number_of_neighbors(state, 0), do:  get_neighbor_weight(state, 0, :right)
+  defp get_number_of_neighbors(state, 1), do:  Enum.max [get_neighbor_weight(state, 1, :right), get_neighbor_weight(state,1, :both)]
+  defp get_number_of_neighbors(state, 8), do:  get_neighbor_weight(state, 8, :left)
+  defp get_number_of_neighbors(state, 7), do:  Enum.max [get_neighbor_weight(state, 7, :left), get_neighbor_weight(state,1, :both)]
+  defp get_number_of_neighbors(state, index), do:  Enum.max [get_neighbor_weight(state, index, :left), get_neighbor_weight(state, index, :right), get_neighbor_weight(state,index, :both)]
+
+
+  defp get_neighbor_scaled_weight state,index do
+      case (get_number_of_neighbors state, index) do
+        1 -> 0.15
+        2 -> 0.25
+        _ -> 0
+      end
   end
 
   defp get_flag_weights state do
     [0.8, 0.9, 1, 1, 1, 1, 1, 0.9, 0.8]
     |> Enum.with_index
-    |> Enum.map fn {elem, index} -> if is_invalid_flag(state, index) do 0 else elem end end
+    |> Enum.map(fn {elem, index} -> {elem + get_neighbor_scaled_weight(state, index), index} end)
+    |> Enum.map(fn {elem, index} -> if is_invalid_flag(state, index) do 0 else elem end end)
+
   end
 
   defp is_invalid_flag(state, flag) do
