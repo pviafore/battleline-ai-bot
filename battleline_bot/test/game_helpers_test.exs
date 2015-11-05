@@ -66,7 +66,11 @@ defmodule GameHelpersTest do
     end
 
     defp initial_state do
-       %{claim: (for _ <- 1..9, do: "unclaimed"), flag_cards: (for _ <- 1..9, do: {[],[]}), direction: :north}
+       %{claim: (for _ <- 1..9, do: "unclaimed"), flag_cards: (for _ <- 1..9, do: {[],[]}), direction: :north, hand: []}
+    end
+
+    defp add_hand state \\ initial_state, hand do
+       %{ state | :hand => hand}
     end
 
     defp claim state, flag, claimer do
@@ -74,13 +78,13 @@ defmodule GameHelpersTest do
     end
 
     test "can pick best flag with best card from best formation given a hand" do
-       assert {2, {"r", 10}} == GameHelper.get_move initial_state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}]
-       assert {2, {"b", 9}} == GameHelper.get_move initial_state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"y",5}, {"b",3}]
+       assert {2, {"r", 10}} == GameHelper.get_move add_hand([{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
+       assert {2, {"b", 9}} == GameHelper.get_move add_hand([{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"y",5}, {"b",3}])
     end
 
     test "can pick best flag with best card from best formation given a hand when flag is claimed" do
        state = claim initial_state, 2, :north
-       assert {3, {"r", 10}} == GameHelper.get_move state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}]
+       assert {3, {"r", 10}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
     end
 
     defp update_flag_state flag_cards, :north, cards do
@@ -98,6 +102,11 @@ defmodule GameHelpersTest do
 
     test "can pick best flag when first flag is full" do
         state = place_cards initial_state, :north, 2, [{"r", 1}, {"r", 2}, {"r", 3}]
-        assert {3, {"r", 10}} == GameHelper.get_move state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}]
+        assert {3, {"r", 10}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
+    end
+
+    test "can pick flag with best chance" do
+           state = place_cards initial_state, :north, 3, [{"r", 1}, {"r", 2}]
+           assert {3, {"r", 3}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
     end
 end

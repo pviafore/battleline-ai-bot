@@ -51,11 +51,16 @@ defmodule GameHelper do
   end
 
   defp is_full(state, flag) do
-    length(get_flags(state, state.direction, flag)) == 3
+    length(get_flag_cards(state, state.direction, flag)) == 3
   end
 
-  defp get_flags state, :north, flag do
+  defp get_flag_cards state, :north, flag do
       elem(Enum.at(state.flag_cards, flag), 0)
+  end
+
+
+  defp get_flag_cards state, :south, flag do
+      elem(Enum.at(state.flag_cards, flag), 1)
   end
 
   defp get_flag state do
@@ -63,10 +68,19 @@ defmodule GameHelper do
      Enum.find_index(flag_weights, &(&1 == Enum.max(flag_weights)))
   end
 
-  def get_move state, cards do
-      card = get_highest_formation(cards) |> get_highest_card
-      flag = get_flag state
-      {flag, card}
+  defp get_scaled_weight state, {formation, index} do
+     get_formation_strength(formation) * Enum.at(get_flag_weights(state), index)
+  end
+
+  defp get_highest_formation_on_board state do
+      0..8
+      |> Enum.map(&{get_highest_formation(get_flag_cards(state, state.direction, &1), state.hand), &1})
+      |> Enum.max_by &(get_scaled_weight(state, &1))
+  end
+
+  def get_move state do
+      {formation, flag} = get_highest_formation_on_board(state)
+      {flag, get_highest_card formation}
   end
 
 end
