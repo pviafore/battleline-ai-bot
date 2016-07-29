@@ -137,7 +137,6 @@ defmodule GameHelper do
 
   defp get_probability state, possibilities, opponent_strength, flag do
         new_possibilities =  Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))
-        if not Enum.empty? new_possibilities do IO.inspect {flag, new_possibilities} end
         Enum.count(Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))) / Enum.count(possibilities)
   end
 
