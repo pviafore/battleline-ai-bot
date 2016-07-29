@@ -98,11 +98,6 @@ defmodule GameHelper do
      get_formation_strength(formation) * Enum.at(get_flag_weights(state), index)
   end
 
-  defp get_highest_formation_on_board state do
-      0..8
-      |> Enum.map(&{get_highest_formation(get_flag_cards(state, state.direction, &1), state.hand), &1})
-      |> Enum.max_by(&(get_scaled_weight(state, &1)))
-  end
 
   def get_playable_flags state do
       0..8
@@ -147,6 +142,18 @@ defmodule GameHelper do
   def get_play_with_probability state, opponent_strength, [flag, card] do
       possibilities = get_possibilities(get_flag_cards(state, state.direction, flag) ++[card], get_unplayed_cards(state))
       [flag, card, get_probability(state, possibilities, opponent_strength, flag)]
+  end
+
+  def get_best_play_considering_hand_only state, plays, opponent_strengths do
+      new_plays = Enum.map(plays, fn [flag, card] -> [flag, card, get_highest_formation(get_flag_cards(state, state.direction, flag) ++ [card], state.hand)] end)
+      good_plays = Enum.filter(new_plays, fn [flag, card, formation] -> is_stronger(state, formation, Enum.at(opponent_strengths, flag), flag) end)
+      if Enum.empty? good_plays do
+          nil
+      else
+          [flag, card, formation] = Enum.min_by(good_plays, fn [_, _, formation] ->  get_formation_strength(formation) end)
+          [flag, card, 1.0]
+
+      end
   end
 
 
