@@ -5,6 +5,9 @@ defmodule GameHelper do
 
   def card_to_string({color, number}), do: color <> "," <> Integer.to_string(number)
 
+  def get_enemy(:north), do: :south
+  def get_enemy(:south), do: :north
+
   def get_cards(), do: for color <- ["color1", "color2", "color3", "color4", "color5", "color6"], number <- 1..10, do: {color, number}
 
   defp is_straight(n1,n2,n3) do
@@ -31,9 +34,12 @@ defmodule GameHelper do
   end
 
   def get_highest_formation(existing \\ [],  cards) when is_list(cards) do
-      cards_left = 3 - Enum.count(existing)
-      card_possibilities = for card_combo <- combinations(cards,cards_left), do: Enum.concat(existing, card_combo)
-      Enum.max_by(card_possibilities, &get_formation_strength/1)
+      Enum.max_by(get_possibilities(existing, cards), &get_formation_strength/1)
+  end
+
+  defp get_possibilities(cards, rest) do
+      cards_left = 3 - Enum.count(cards)
+      for card_combo <- combinations(rest,cards_left), do: Enum.concat(cards, card_combo)
   end
 
   defp is_claimed state, flag do
@@ -88,11 +94,6 @@ defmodule GameHelper do
       elem(Enum.at(state.flag_cards, flag), 1)
   end
 
-  defp get_flag state do
-     flag_weights = get_flag_weights state
-     Enum.find_index(flag_weights, &(&1 == Enum.max(flag_weights)))
-  end
-
   defp get_scaled_weight state, {formation, index} do
      get_formation_strength(formation) * Enum.at(get_flag_weights(state), index)
   end
@@ -100,12 +101,53 @@ defmodule GameHelper do
   defp get_highest_formation_on_board state do
       0..8
       |> Enum.map(&{get_highest_formation(get_flag_cards(state, state.direction, &1), state.hand), &1})
-      |> Enum.max_by &(get_scaled_weight(state, &1))
+      |> Enum.max_by(&(get_scaled_weight(state, &1)))
   end
 
-  def get_move state do
-      {formation, flag} = get_highest_formation_on_board(state)
-      {flag, get_highest_card formation}
+  def get_playable_flags state do
+      0..8
+      |> Enum.reject(&is_invalid_flag state, &1)
   end
+
+  def get_plays state do
+      cartesian_product(get_playable_flags(state), state.hand)
+  end
+
+  def get_played_cards state do
+      0..8
+      |> Enum.flat_map(&(get_flag_cards(state, :north, &1) ++ get_flag_cards(state, :south, &1)))
+  end
+
+  defp get_unplayed_cards state do
+      MapSet.difference(MapSet.new(get_cards()), MapSet.new(state.hand ++ get_played_cards(state))) |> MapSet.to_list
+  end
+
+  def get_opponent_highest_formation state, flag do
+      get_highest_formation(get_flag_cards(state, get_enemy(state.direction), flag), get_unplayed_cards(state)) |> get_formation_strength
+  end
+
+  def get_opponent_strengths state do
+      0..8
+      |> Enum.map(&(get_opponent_highest_formation state, &1))
+  end
+
+  def has_more_cards(state, direction, flag) do
+      Enum.count(get_flag_cards(state, direction, flag)) >= Enum.count(get_flag_cards(state, get_enemy(direction), flag))
+  end
+
+  defp is_stronger state, possibility, opponent_strength,flag do
+      strength = get_formation_strength possibility
+      strength > opponent_strength or (strength == opponent_strength and has_more_cards(state, state.direction, flag))
+  end
+
+  defp get_probability state, possibilities, opponent_strength, flag do
+        Enum.count(Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))) /Enum.count(possibilities)
+  end
+
+  def get_play_with_probability state, opponent_strength, [flag, card] do
+      possibilities = get_possibilities(get_flag_cards(state, state.direction, flag) ++[card], get_unplayed_cards(state))
+      [flag, card, get_probability(state, possibilities, opponent_strength, flag)]
+  end
+
 
 end

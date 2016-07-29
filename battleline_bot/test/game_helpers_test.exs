@@ -77,16 +77,6 @@ defmodule GameHelpersTest do
       %{ state | :claim => List.replace_at(state.claim, flag, claimer)}
     end
 
-    test "can pick best flag with best card from best formation given a hand" do
-       assert {2, {"r", 10}} == GameHelper.get_move add_hand([{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
-       assert {2, {"b", 9}} == GameHelper.get_move add_hand([{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"y",5}, {"b",3}])
-    end
-
-    test "can pick best flag with best card from best formation given a hand when flag is claimed" do
-       state = claim initial_state, 2, :north
-       assert {3, {"r", 10}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
-    end
-
     defp update_flag_state flag_cards, :north, cards do
         {cards, elem(flag_cards, 1)}
     end
@@ -100,27 +90,34 @@ defmodule GameHelpersTest do
 
     end
 
-    test "can pick best flag when first flag is full" do
-        state = place_cards initial_state, :north, 2, [{"r", 1}, {"r", 2}, {"r", 3}]
-        assert {3, {"r", 10}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
+
+    test "can select playable flags" do
+        state = initial_state |> claim(3, :north) |> claim(7, :south) |> place_cards(:north, 2, [{"r", 1}, {"r", 2}, {"r", 3}])
+        assert GameHelper.get_playable_flags(state) == [0,1,4,5,6,8]
     end
 
-    test "can pick flag with best chance" do
-           state = place_cards initial_state, :north, 3, [{"r", 1}, {"r", 2}]
-           assert {3, {"r", 3}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
-           assert {2, {"b", 10}} == GameHelper.get_move add_hand(state, [{"b",9}, {"y", 9}, {"z", 2}, {"z",3},  {"g",8},  {"b",10}, {"b",3}])
+    test "can get plays" do
+        state = initial_state |> claim(3, :north) |> claim(7, :south) |> place_cards(:north, 2, [{"r", 1}, {"r", 2}, {"r", 3}]) |> add_hand( [{"b", 1}, {"g", 8}])
+        assert GameHelper.get_plays(state) == [[0, {"b", 1}], [0, {"g", 8}], [1, {"b", 1}], [1, {"g", 8}], [4, {"b", 1}], [4, {"g", 8}], [5, {"b", 1}], [5, {"g", 8}], [6, {"b", 1}], [6, {"g", 8}], [8, {"b", 1}], [8, {"g", 8}]]
     end
 
-    test "will pick a flag that has two neighbors over best flag" do
-      state = initial_state |> claim(6, :north) |> claim(7, :north) |> add_hand([{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
-      assert {5, {"r", 10}} == GameHelper.get_move state
-      new_state = state |> claim(0, :north) |> claim(2, :north) |> claim(5, :south)
-      assert {1, {"r", 10}} == GameHelper.get_move new_state
+    test "can get enemy" do
+        assert :south = GameHelper.get_enemy :north
+        assert :north = GameHelper.get_enemy :south
+    end
+
+    test "get opponent's highest formation" do
+        state = initial_state |> place_cards(:north, 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}])
+        assert GameHelper.get_opponent_highest_formation(state, 1) == 527
+        new_state = state |> add_hand( [{"color1", 10}, {"color2", 10}, {"color3", 10}, {"color4", 10}, {"color5", 10}, {"color6", 10}])
+        assert GameHelper.get_opponent_highest_formation(new_state, 1) == 524
 
     end
 
-    test "will pick a flag that has one neighbor over best flag" do
-      state = initial_state |> claim(4, :north) |> add_hand([{"b",9}, {"y", 9}, {"r", 2}, {"r",3},  {"g",8},  {"r",10}, {"b",3}])
-      assert {3, {"r", 10}} == GameHelper.get_move state
+    test "Get play with probability" do
+        state = initial_state |> place_cards(:north, 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}]) |> add_hand( [{"color1", 10}, {"color2", 10}])
+        assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 10}]) == [1, {"color1", 10}, 6.734006734006734e-4]
+        assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 1}]) == [1, {"color1", 1}, 0]
     end
+
 end

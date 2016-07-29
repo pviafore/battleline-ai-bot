@@ -5,7 +5,8 @@ defmodule ProbStrategy do
   end
 
   defp get_card_to_play(state) do
-     "play 1 " <> GameHelper.card_to_string(GameHelper.get_highest_card(state.hand))
+     {flag, card, _prob} = get_move(state)
+     "play "<>flag + 1 <>" " <> GameHelper.card_to_string(card)
   end
 
   def recv outputter do
@@ -16,6 +17,14 @@ defmodule ProbStrategy do
         _ -> nil
      end
      recv outputter
+  end
+
+  def get_move state do
+      plays = GameHelper.get_plays(state)
+      opponents_strength = GameHelper.get_opponent_strengths(state)
+      plays = Enum.map(plays, fn [flag, card] ->GameHelper.get_play_with_probability(state, Enum.at(opponents_strength, flag), [flag, card]) end)
+      Enum.max_by(plays, &(Enum.at(&1, 2)))
+
   end
 
 end
