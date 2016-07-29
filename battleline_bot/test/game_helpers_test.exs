@@ -66,7 +66,7 @@ defmodule GameHelpersTest do
     end
 
     defp initial_state do
-       %{claim: (for _ <- 1..9, do: "unclaimed"), flag_cards: (for _ <- 1..9, do: {[],[]}), direction: :north, hand: []}
+       %{claim: (for _ <- 1..9, do: "unclaimed"), flag_cards: (for _ <- 1..9, do: {[],[]}), direction: "north", hand: []}
     end
 
     defp add_hand state \\ initial_state, hand do
@@ -77,11 +77,11 @@ defmodule GameHelpersTest do
       %{ state | :claim => List.replace_at(state.claim, flag, claimer)}
     end
 
-    defp update_flag_state flag_cards, :north, cards do
+    defp update_flag_state flag_cards, "north", cards do
         {cards, elem(flag_cards, 1)}
     end
 
-    defp update_flag_state flag_cards, :south, cards do
+    defp update_flag_state flag_cards, "south", cards do
         {elem(flag_cards, 0), cards}
     end
 
@@ -92,22 +92,22 @@ defmodule GameHelpersTest do
 
 
     test "can select playable flags" do
-        state = initial_state |> claim(3, :north) |> claim(7, :south) |> place_cards(:north, 2, [{"r", 1}, {"r", 2}, {"r", 3}])
+        state = initial_state |> claim(3, "north") |> claim(7, "south") |> place_cards("north", 2, [{"r", 1}, {"r", 2}, {"r", 3}])
         assert GameHelper.get_playable_flags(state) == [0,1,4,5,6,8]
     end
 
     test "can get plays" do
-        state = initial_state |> claim(3, :north) |> claim(7, :south) |> place_cards(:north, 2, [{"r", 1}, {"r", 2}, {"r", 3}]) |> add_hand( [{"b", 1}, {"g", 8}])
+        state = initial_state |> claim(3, "north") |> claim(7, "south") |> place_cards("north", 2, [{"r", 1}, {"r", 2}, {"r", 3}]) |> add_hand( [{"b", 1}, {"g", 8}])
         assert GameHelper.get_plays(state) == [[0, {"b", 1}], [0, {"g", 8}], [1, {"b", 1}], [1, {"g", 8}], [4, {"b", 1}], [4, {"g", 8}], [5, {"b", 1}], [5, {"g", 8}], [6, {"b", 1}], [6, {"g", 8}], [8, {"b", 1}], [8, {"g", 8}]]
     end
 
     test "can get enemy" do
-        assert :south = GameHelper.get_enemy :north
-        assert :north = GameHelper.get_enemy :south
+        assert "south" = GameHelper.get_enemy "north"
+        assert "north" = GameHelper.get_enemy "south"
     end
 
     test "get opponent's highest formation" do
-        state = initial_state |> place_cards(:north, 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}])
+        state = initial_state |> place_cards("north", 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}])
         assert GameHelper.get_opponent_highest_formation(state, 1) == 527
         new_state = state |> add_hand( [{"color1", 10}, {"color2", 10}, {"color3", 10}, {"color4", 10}, {"color5", 10}, {"color6", 10}])
         assert GameHelper.get_opponent_highest_formation(new_state, 1) == 524
@@ -115,7 +115,7 @@ defmodule GameHelpersTest do
     end
 
     test "Get play with probability" do
-        state = initial_state |> place_cards(:north, 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}]) |> add_hand( [{"color1", 10}, {"color2", 10}])
+        state = initial_state |> place_cards("north", 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}]) |> add_hand( [{"color1", 10}, {"color2", 10}])
         assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 10}]) == [1, {"color1", 10}, 6.734006734006734e-4]
         assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 1}]) == [1, {"color1", 1}, 0]
     end

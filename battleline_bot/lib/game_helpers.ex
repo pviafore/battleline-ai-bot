@@ -5,8 +5,8 @@ defmodule GameHelper do
 
   def card_to_string({color, number}), do: color <> "," <> Integer.to_string(number)
 
-  def get_enemy(:north), do: :south
-  def get_enemy(:south), do: :north
+  def get_enemy("north"), do: "south"
+  def get_enemy("south"), do: "north"
 
   def get_cards(), do: for color <- ["color1", "color2", "color3", "color4", "color5", "color6"], number <- 1..10, do: {color, number}
 
@@ -85,12 +85,12 @@ defmodule GameHelper do
     length(get_flag_cards(state, state.direction, flag)) == 3
   end
 
-  defp get_flag_cards state, :north, flag do
+  defp get_flag_cards state, "north", flag do
       elem(Enum.at(state.flag_cards, flag), 0)
   end
 
 
-  defp get_flag_cards state, :south, flag do
+  defp get_flag_cards state, "south", flag do
       elem(Enum.at(state.flag_cards, flag), 1)
   end
 
@@ -115,7 +115,7 @@ defmodule GameHelper do
 
   def get_played_cards state do
       0..8
-      |> Enum.flat_map(&(get_flag_cards(state, :north, &1) ++ get_flag_cards(state, :south, &1)))
+      |> Enum.flat_map(&(get_flag_cards(state, "north", &1) ++ get_flag_cards(state, "south", &1)))
   end
 
   defp get_unplayed_cards state do
