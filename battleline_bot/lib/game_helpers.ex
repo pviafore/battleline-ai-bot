@@ -136,7 +136,9 @@ defmodule GameHelper do
   end
 
   defp get_probability state, possibilities, opponent_strength, flag do
-        Enum.count(Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))) /Enum.count(possibilities)
+        new_possibilities =  Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))
+        if not Enum.empty? new_possibilities do IO.inspect {flag, new_possibilities} end
+        Enum.count(Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))) / Enum.count(possibilities)
   end
 
   def get_play_with_probability state, opponent_strength, [flag, card] do
@@ -153,6 +155,18 @@ defmodule GameHelper do
           [flag, card, formation] = Enum.min_by(good_plays, fn [_, _, formation] ->  get_formation_strength(formation) end)
           [flag, card, 1.0]
 
+      end
+  end
+
+  def get_move state do
+      plays = GameHelper.get_plays(state)
+      opponents_strength = GameHelper.get_opponent_strengths(state)
+      play = GameHelper.get_best_play_considering_hand_only(state, plays, opponents_strength)
+      if not is_nil(play) do
+          play
+      else
+          plays = Enum.map(plays, fn [flag, card] ->GameHelper.get_play_with_probability(state, Enum.at(opponents_strength, flag), [flag, card]) end)
+          Enum.max_by(plays, &(Enum.at(&1, 2)))
       end
   end
 

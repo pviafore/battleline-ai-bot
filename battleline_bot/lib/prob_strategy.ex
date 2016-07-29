@@ -6,7 +6,7 @@ defmodule ProbStrategy do
   end
 
   defp get_card_to_play(state) do
-     [flag, card, _prob] = get_move(state)
+     [flag, card, _prob] = GameHelper.get_move(state)
      {:ok, file} = File.open "exout.txt", [:append]
      IO.puts file, "play "<> Integer.to_string(flag + 1) <>" " <> GameHelper.card_to_string(card) <> " " <> Float.to_string(_prob)
      "play "<> Integer.to_string(flag + 1) <>" " <> GameHelper.card_to_string(card)
@@ -22,19 +22,7 @@ defmodule ProbStrategy do
      recv outputter
   end
 
-  def get_move state do
-      plays = GameHelper.get_plays(state)
-      opponents_strength = GameHelper.get_opponent_strengths(state)
-      play = GameHelper.get_best_play_considering_hand_only(state, plays, opponents_strength)
-      if not is_nil(play) do
-          play
-      else
-
-          plays = Enum.map(plays, fn [flag, card] ->GameHelper.get_play_with_probability(state, Enum.at(opponents_strength, flag), [flag, card]) end)
-          Enum.max_by(plays, &(Enum.at(&1, 2)))
-      end
 
 
-  end
 
 end

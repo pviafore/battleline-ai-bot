@@ -120,4 +120,5 @@ defmodule GameHelpersTest do
         assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 1}]) == [1, {"color1", 1}, 0]
     end
 
+
 end
