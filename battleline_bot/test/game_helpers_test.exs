@@ -116,8 +116,35 @@ defmodule GameHelpersTest do
 
     test "Get play with probability" do
         state = initial_state |> place_cards("north", 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}]) |> add_hand( [{"color1", 10}, {"color2", 10}])
-        assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 10}]) == [1, {"color1", 10}, 6.734006734006734e-4]
+        assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 10}]) == [1, {"color1", 10}, 6.060606060606061e-4]
         assert GameHelper.get_play_with_probability(state, 527, [1, {"color1", 1}]) == [1, {"color1", 1}, 0]
+    end
+
+    test "Scratchpad" do
+        state = initial_state
+               |> add_hand( [{"color1", 1}, {"color2", 2}, {"color3", 7}, {"color2", 1}, {"color3", 4}, {"color3", 5}, {"color2", 3}])
+               |> place_cards("north", 0, [{"color2", 5}, {"color4", 5}, {"color1", 5}])
+               |> place_cards("south", 0, [{"color5", 10}, {"color5", 8}, {"color5", 1}])
+               |> place_cards("north", 1, [{"color6", 9}, {"color6", 10}])
+               |> place_cards("south", 1, [{"color3", 1}, {"color3", 3}, {"color3", 9}])
+               |> place_cards("north", 2, [{"color2", 8}, {"color6", 8}])
+               |> place_cards("south", 2, [{"color1", 6}, {"color2", 6}, {"color5", 6}])
+               |> place_cards("north", 3, [{"color2", 9}])
+               |> place_cards("south", 3, [{"color1", 10}, {"color3", 10}])
+               |> place_cards("north", 4, [{"color5", 9}])
+               |> place_cards("south", 4, [{"color6", 5}])
+               |> place_cards("north", 5, [{"color5", 7}, {"color5", 2}])
+        assert GameHelper.get_move(state) == [6, {"color2", 2}, 506.0]
+    end
+
+    test "Scratchpad 2" do
+        state = initial_state
+               |> add_hand( [{"color1", 4}, {"color1", 5}, {"color2", 1}, {"color3", 9}, {"color3", 5}, {"color2", 7}, {"color3", 2}])
+               |> place_cards("north", 0, [{"color4", 8}])
+               |> place_cards("south", 0, [{"color3", 10}, {"color3", 6}, {"color3", 4}])
+               |> place_cards("south", 1, [{"color2", 8}])
+               |> place_cards("north", 2, [{"color5", 10}, {"color5", 9}])
+        assert GameHelper.get_move(state) == [1, {"color3", 9}, 316.0]
     end
 
 end

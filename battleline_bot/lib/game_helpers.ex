@@ -3,6 +3,10 @@ defmodule GameHelper do
   def get_highest_card([]), do: nil
   def get_highest_card(cards), do: Enum.max_by cards,&(elem &1, 1)
 
+
+  def get_lowest_card([]), do: nil
+  def get_lowest_card(cards), do: Enum.min_by cards,&(elem &1, 1)
+
   def card_to_string({color, number}), do: color <> "," <> Integer.to_string(number)
 
   def get_enemy("north"), do: "south"
@@ -17,15 +21,15 @@ defmodule GameHelper do
 
   def get_formation_strength([{color, n1}, {color, n2}, {color, n3}]) do
      cond do
-         is_straight(n1,n2,n3) -> 500 + n1 + n2 + n3
-         true -> 300 + n1 + n2 + n3
+         is_straight(n1,n2,n3) -> 500.0 + n1 + n2 + n3
+         true -> 300.0 + n1 + n2 + n3
      end
   end
-  def get_formation_strength([{_, num}, {_, num}, {_, num}]), do: 400 + num*3
+  def get_formation_strength([{_, num}, {_, num}, {_, num}]), do: 400.0 + num*3
   def get_formation_strength([{_, n1}, {_, n2}, {_, n3}]) do
     cond do
-        is_straight(n1,n2,n3) -> 200 + n1 + n2 + n3
-        true -> 100 + n1 + n2 + n3
+        is_straight(n1,n2,n3) -> 200.0 + n1 + n2 + n3
+        true -> 100.0 + n1 + n2 + n3
     end
   end
 
@@ -137,7 +141,8 @@ defmodule GameHelper do
 
   defp get_probability state, possibilities, opponent_strength, flag do
         new_possibilities =  Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))
-        Enum.count(Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))) / Enum.count(possibilities)
+        prob = Enum.count(Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))) / Enum.count(possibilities)
+        prob * Enum.at(get_flag_weights(state), flag)
   end
 
   def get_play_with_probability state, opponent_strength, [flag, card] do
@@ -153,24 +158,47 @@ defmodule GameHelper do
       else
           [flag, card, formation] = Enum.min_by(good_plays, fn [_, _, formation] ->  get_formation_strength(formation) end)
           [flag, card, 1.0]
-
       end
   end
 
+
+  def get_highest_formation_from_plays state, plays do
+      new_plays = Enum.map(plays, fn [flag, card] -> [flag, card, get_formation_strength(get_highest_formation(get_flag_cards(state, state.direction, flag) ++ [card], get_unplayed_cards(state)))] end)
+      filtered_plays = Enum.filter(new_plays, fn [flag, card, formation] -> formation >= get_highest_formation(get_flag_cards(state, state.direction, flag), get_unplayed_cards(state)) end)
+      if not Enum.empty?(filtered_plays) do
+          Enum.max_by(filtered_plays, &(Enum.at(&1, 2)))
+      else
+          nil
+      end
+  end
+
+  def get_best_formation_from_hand_only(state, plays) do
+      Enum.map(plays,
+          fn [flag, card] ->
+              [flag, card, get_formation_strength(get_highest_formation(get_flag_cards(state, state.direction, flag) ++ [card],
+                                                 Enum.reject(state.hand, &(&1 == card))))] end)
+      |> Enum.max_by(&(Enum.at(&1, 2)))
+  end
+
   def get_move state do
-      plays = GameHelper.get_plays(state)
-      opponents_strength = GameHelper.get_opponent_strengths(state)
-      play = GameHelper.get_best_play_considering_hand_only(state, plays, opponents_strength)
+      plays = get_plays(state)
+      opponents_strength = get_opponent_strengths(state)
+      play = get_best_play_considering_hand_only(state, plays, opponents_strength)
       if not is_nil(play) do
           play
       else
-          plays = Enum.map(plays, fn [flag, card] ->GameHelper.get_play_with_probability(state, Enum.at(opponents_strength, flag), [flag, card]) end)
-          best_chance = Enum.max_by(plays, &(Enum.at(&1, 2)))
-          [flag, card, prob] = best_chance
-          if prob == 0 do
-              best_chance
+          plays_probs = Enum.map(plays, fn [flag, card] ->get_play_with_probability(state, Enum.at(opponents_strength, flag), [flag, card]) end)
+          [flag, card, prob] = Enum.max_by(plays_probs, &(Enum.at(&1, 2)))
+          if prob == 0  do
+              hand_plays = get_best_formation_from_hand_only(state, plays)
+              best_formation = get_highest_formation_from_plays(state, plays)
+              if is_nil(best_formation) do
+                  hand_plays
+              else
+                  Enum.max_by([best_formation, hand_plays], &(Enum.at(&1, 2)))
+              end
           else
-              best_chance
+              [flag, card, prob]
           end
       end
   end
