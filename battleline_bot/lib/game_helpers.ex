@@ -188,17 +188,19 @@ defmodule GameHelper do
           play
       else
           plays_probs = Enum.map(plays, fn [flag, card] ->get_play_with_probability(state, Enum.at(opponents_strength, flag), [flag, card]) end)
-          [flag, card, prob] = Enum.max_by(plays_probs, &(Enum.at(&1, 2)))
-          if prob == 0  do
-              hand_plays = get_best_formation_from_hand_only(state, plays)
-              best_formation = get_highest_formation_from_plays(state, plays)
-              if is_nil(best_formation) do
-                  hand_plays
+          if Enum.empty?(plays_probs) do [1, {"color1", 1}, 0] else
+              [flag, card, prob] = Enum.max_by(plays_probs, &(Enum.at(&1, 2)))
+              if prob == 0  do
+                  hand_plays = get_best_formation_from_hand_only(state, plays)
+                  best_formation = get_highest_formation_from_plays(state, plays)
+                  if is_nil(best_formation) do
+                      hand_plays
+                  else
+                      Enum.max_by([best_formation, hand_plays], &(Enum.at(&1, 2)))
+                  end
               else
-                  Enum.max_by([best_formation, hand_plays], &(Enum.at(&1, 2)))
+                  [flag, card, prob]
               end
-          else
-              [flag, card, prob]
           end
       end
   end
