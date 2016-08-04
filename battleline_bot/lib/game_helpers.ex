@@ -41,6 +41,10 @@ defmodule GameHelper do
       Enum.max_by(get_possibilities(existing, cards), &get_formation_strength/1)
   end
 
+  def get_lowest_formation(existing \\ [],  cards) when is_list(cards) do
+      Enum.min_by(get_possibilities(existing, cards), &get_formation_strength/1)
+  end
+
   defp get_possibilities(cards, rest) do
       cards_left = 3 - Enum.count(cards)
       for card_combo <- combinations(rest,cards_left), do: Enum.concat(cards, card_combo)
@@ -110,6 +114,11 @@ defmodule GameHelper do
 
   def get_plays state do
       cartesian_product(get_playable_flags(state), state.hand)
+      |> Enum.reject(&(does_guarantee_other_player_win state, &1))
+  end
+
+  defp does_guarantee_other_player_win state, [flag, card] do
+      get_opponent_lowest_formation(state, flag) > get_formation_strength(get_highest_formation(get_flag_cards(state, state.direction, flag) ++ [card], get_unplayed_cards(state)))
   end
 
   def get_played_cards state do
@@ -123,6 +132,10 @@ defmodule GameHelper do
 
   def get_opponent_highest_formation state, flag do
       get_highest_formation(get_flag_cards(state, get_enemy(state.direction), flag), get_unplayed_cards(state)) |> get_formation_strength
+  end
+
+  def get_opponent_lowest_formation state, flag do
+      get_lowest_formation(get_flag_cards(state, get_enemy(state.direction), flag), get_unplayed_cards(state)) |> get_formation_strength
   end
 
   def get_opponent_strengths state do

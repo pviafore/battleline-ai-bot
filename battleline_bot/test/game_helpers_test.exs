@@ -97,8 +97,16 @@ defmodule GameHelpersTest do
     end
 
     test "can get plays" do
-        state = initial_state |> claim(3, "north") |> claim(7, "south") |> place_cards("north", 2, [{"r", 1}, {"r", 2}, {"r", 3}]) |> add_hand( [{"b", 1}, {"g", 8}])
-        assert GameHelper.get_plays(state) == [[0, {"b", 1}], [0, {"g", 8}], [1, {"b", 1}], [1, {"g", 8}], [4, {"b", 1}], [4, {"g", 8}], [5, {"b", 1}], [5, {"g", 8}], [6, {"b", 1}], [6, {"g", 8}], [8, {"b", 1}], [8, {"g", 8}]]
+        state = initial_state |> claim(3, "north") |> claim(7, "south") |> place_cards("north", 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}]) |> add_hand( [{"color3", 1}, {"color4", 8}])
+        assert GameHelper.get_plays(state) == [[0, {"color3", 1}], [0, {"color4", 8}], [1, {"color3", 1}], [1, {"color4", 8}], [4, {"color3", 1}], [4, {"color4", 8}], [5, {"color3", 1}], [5, {"color4", 8}], [6, {"color3", 1}], [6, {"color4", 8}], [8, {"color3", 1}], [8, {"color4", 8}]]
+    end
+
+    test "getting plays filters out automatic losses" do
+        state = initial_state |> claim(3, "north") |> claim(7, "south")
+        |> place_cards("north", 2, [{"color1", 1}, {"color1", 2}, {"color1", 3}])
+        |> place_cards("south", 4, [{"color2", 7}, {"color2", 8}, {"color2", 9}])
+        |> add_hand( [{"color3", 1}, {"color4", 8}])
+        assert GameHelper.get_plays(state) == [[0, {"color3", 1}], [0, {"color4", 8}], [1, {"color3", 1}], [1, {"color4", 8}], [4, {"color4", 8}], [5, {"color3", 1}], [5, {"color4", 8}], [6, {"color3", 1}], [6, {"color4", 8}], [8, {"color3", 1}], [8, {"color4", 8}]]
     end
 
     test "can get enemy" do
