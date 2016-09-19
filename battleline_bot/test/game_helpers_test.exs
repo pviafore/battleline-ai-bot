@@ -69,7 +69,7 @@ defmodule GameHelpersTest do
        %{claim: (for _ <- 1..9, do: "unclaimed"), flag_cards: (for _ <- 1..9, do: {[],[]}), direction: "north", hand: []}
     end
 
-    defp add_hand state \\ initial_state, hand do
+    defp add_hand state, hand do
        %{ state | :hand => hand}
     end
 
