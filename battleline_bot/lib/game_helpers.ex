@@ -97,7 +97,6 @@ defmodule GameHelper do
       elem(Enum.at(state.flag_cards, flag), 0)
   end
 
-
   defp get_flag_cards state, "south", flag do
       elem(Enum.at(state.flag_cards, flag), 1)
   end
@@ -111,6 +110,7 @@ defmodule GameHelper do
   def get_plays state do
       cartesian_product(get_playable_flags(state), state.hand)
       |> Enum.reject(&(does_guarantee_other_player_win state, &1))
+      |> Enum.uniq_by(fn [flag, card] -> [card, Enum.at(state.flag_cards, flag), Enum.at(get_flag_weights(state), flag)] end)
   end
 
   defp does_guarantee_other_player_win state, [flag, card] do
@@ -154,8 +154,12 @@ defmodule GameHelper do
   end
 
   def get_play_with_probability state, opponent_strength, [flag, card] do
-      possibilities = get_possibilities(get_flag_cards(state, state.direction, flag) ++[card], get_unplayed_cards(state))
-      [flag, card, get_probability(state, possibilities, opponent_strength, flag)]
+      if get_flag_cards(state, "north", flag) == [] and get_flag_cards(state, "south", flag) == 0do
+          [flag, card, 0.0]
+      else
+          possibilities = get_possibilities(get_flag_cards(state, state.direction, flag) ++[card], get_unplayed_cards(state))
+          [flag, card, get_probability(state, possibilities, opponent_strength, flag)]
+      end
   end
 
   def get_best_play_considering_hand_only state, plays, opponent_strengths do
