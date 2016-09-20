@@ -65,7 +65,7 @@ defmodule GameHelper do
   defp get_number_of_neighbors(state, 0), do:  get_neighbor_weight(state, 0, :right)
   defp get_number_of_neighbors(state, 1), do:  Enum.max [get_neighbor_weight(state, 1, :right), get_neighbor_weight(state,1, :both)]
   defp get_number_of_neighbors(state, 8), do:  get_neighbor_weight(state, 8, :left)
-  defp get_number_of_neighbors(state, 7), do:  Enum.max [get_neighbor_weight(state, 7, :left), get_neighbor_weight(state,1, :both)]
+  defp get_number_of_neighbors(state, 7), do:  Enum.max [get_neighbor_weight(state, 7, :left), get_neighbor_weight(state,7, :both)]
   defp get_number_of_neighbors(state, index), do:  Enum.max [get_neighbor_weight(state, index, :left), get_neighbor_weight(state, index, :right), get_neighbor_weight(state,index, :both)]
 
 
@@ -100,10 +100,6 @@ defmodule GameHelper do
 
   defp get_flag_cards state, "south", flag do
       elem(Enum.at(state.flag_cards, flag), 1)
-  end
-
-  defp get_scaled_weight state, {formation, index} do
-     get_formation_strength(formation) * Enum.at(get_flag_weights(state), index)
   end
 
 
@@ -153,7 +149,6 @@ defmodule GameHelper do
   end
 
   defp get_probability state, possibilities, opponent_strength, flag do
-        new_possibilities =  Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))
         prob = Enum.count(Enum.filter(possibilities, &(is_stronger state, &1, opponent_strength,flag))) / Enum.count(possibilities)
         prob * Enum.at(get_flag_weights(state), flag)
   end
@@ -165,7 +160,7 @@ defmodule GameHelper do
 
   def get_best_play_considering_hand_only state, plays, opponent_strengths do
       new_plays = Enum.map(plays, fn [flag, card] -> [flag, card, get_highest_formation(get_flag_cards(state, state.direction, flag) ++ [card], state.hand)] end)
-      good_plays = Enum.filter(new_plays, fn [flag, card, formation] -> is_stronger(state, formation, Enum.at(opponent_strengths, flag), flag) end)
+      good_plays = Enum.filter(new_plays, fn [flag, _card, formation] -> is_stronger(state, formation, Enum.at(opponent_strengths, flag), flag) end)
       if Enum.empty? good_plays do
           nil
       else
@@ -177,7 +172,7 @@ defmodule GameHelper do
 
   def get_highest_formation_from_plays state, plays do
       new_plays = Enum.map(plays, fn [flag, card] -> [flag, card, get_formation_strength(get_highest_formation(get_flag_cards(state, state.direction, flag) ++ [card], get_unplayed_cards(state)))] end)
-      filtered_plays = Enum.filter(new_plays, fn [flag, card, formation] -> formation >= get_highest_formation(get_flag_cards(state, state.direction, flag), get_unplayed_cards(state)) end)
+      filtered_plays = Enum.filter(new_plays, fn [flag, _card, formation] -> formation >= get_highest_formation(get_flag_cards(state, state.direction, flag), get_unplayed_cards(state)) end)
       if not Enum.empty?(filtered_plays) do
           Enum.max_by(filtered_plays, &(Enum.at(&1, 2)))
       else
