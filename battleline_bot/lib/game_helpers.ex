@@ -103,8 +103,7 @@ defmodule GameHelper do
 
 
   def get_playable_flags state do
-      0..8
-      |> Enum.reject(&is_invalid_flag state, &1)
+      Enum.reject(0..8, &is_invalid_flag state, &1)
   end
 
   def get_plays state do
@@ -118,8 +117,7 @@ defmodule GameHelper do
   end
 
   def get_played_cards state do
-      0..8
-      |> Enum.flat_map(&(get_flag_cards(state, "north", &1) ++ get_flag_cards(state, "south", &1)))
+      Enum.flat_map(0..8, &(get_flag_cards(state, "north", &1) ++ get_flag_cards(state, "south", &1)))
   end
 
   defp get_unplayed_cards state do
@@ -135,8 +133,7 @@ defmodule GameHelper do
   end
 
   def get_opponent_strengths state do
-      0..8
-      |> Enum.map(&(get_opponent_highest_formation state, &1))
+      Enum.map(0..8, &(get_opponent_highest_formation state, &1))
   end
 
   def has_more_cards(state, direction, flag) do
