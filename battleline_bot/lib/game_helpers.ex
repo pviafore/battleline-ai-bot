@@ -56,21 +56,21 @@ defmodule GameHelper do
 
   defp get_claim(state, flag), do: Enum.at(state.claim, flag)
 
-  defp get_neighbor_weight(state, index), do: (if state.direction == get_claim(state, index) do 1 else 0 end)
+  defp get_neighbor_weight(state, index, direction), do: (if direction == get_claim(state, index) do 1 else 0 end)
 
-  defp get_neighbor_weight(state, index, :right), do: get_neighbor_weight(state, index + 1) + get_neighbor_weight(state, index+2)
-  defp get_neighbor_weight(state, index, :left) ,do: get_neighbor_weight(state, index - 1) + get_neighbor_weight(state, index-2)
-  defp get_neighbor_weight(state, index, :both) ,do: get_neighbor_weight(state, index - 1) + get_neighbor_weight(state, index+1)
+  defp get_neighbor_weight(state, index, :right, direction), do: get_neighbor_weight(state, index + 1, direction) + get_neighbor_weight(state, index+2, direction)
+  defp get_neighbor_weight(state, index, :left, direction) ,do: get_neighbor_weight(state, index - 1, direction) + get_neighbor_weight(state, index-2, direction)
+  defp get_neighbor_weight(state, index, :both, direction) ,do: get_neighbor_weight(state, index - 1, direction) + get_neighbor_weight(state, index+1, direction)
 
-  defp get_number_of_neighbors(state, 0), do:  get_neighbor_weight(state, 0, :right)
-  defp get_number_of_neighbors(state, 1), do:  Enum.max [get_neighbor_weight(state, 1, :right), get_neighbor_weight(state,1, :both)]
-  defp get_number_of_neighbors(state, 8), do:  get_neighbor_weight(state, 8, :left)
-  defp get_number_of_neighbors(state, 7), do:  Enum.max [get_neighbor_weight(state, 7, :left), get_neighbor_weight(state,7, :both)]
-  defp get_number_of_neighbors(state, index), do:  Enum.max [get_neighbor_weight(state, index, :left), get_neighbor_weight(state, index, :right), get_neighbor_weight(state,index, :both)]
+  defp get_number_of_neighbors(state, 0, direction), do:  get_neighbor_weight(state, 0, :right, direction)
+  defp get_number_of_neighbors(state, 1, direction), do:  Enum.max [get_neighbor_weight(state, 1, :right, direction), get_neighbor_weight(state,1, :both, direction)]
+  defp get_number_of_neighbors(state, 8, direction), do:  get_neighbor_weight(state, 8, :left, direction)
+  defp get_number_of_neighbors(state, 7, direction), do:  Enum.max [get_neighbor_weight(state, 7, :left, direction), get_neighbor_weight(state,7, :both, direction)]
+  defp get_number_of_neighbors(state, index, direction), do:  Enum.max [get_neighbor_weight(state, index, :left, direction), get_neighbor_weight(state, index, :right, direction), get_neighbor_weight(state,index, :both)]
 
 
   defp get_neighbor_scaled_weight state,index do
-      case (get_number_of_neighbors state, index) do
+      case (Enum.max([get_number_of_neighbors(state, index, state.direction), get_number_of_neighbors(state, index, get_enemy(state.direction))])) do
         1 -> 0.15
         2 -> 0.25
         _ -> 0
@@ -103,7 +103,7 @@ defmodule GameHelper do
 
 
   def get_playable_flags state do
-      Enum.reject(0..8, &is_invalid_flag state, &1)
+      Enum.reject(0..8, &is_invalid_flag(state, &1))
   end
 
   def get_plays state do
