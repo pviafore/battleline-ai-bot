@@ -164,7 +164,7 @@ defmodule GameHelper do
       if Enum.empty? good_plays do
           nil
       else
-          [flag, card, formation] = Enum.min_by(good_plays, fn [_, _, formation] ->  get_formation_strength(formation) end)
+          [flag, card, _formation] = Enum.min_by(good_plays, fn [_, _, formation] ->  get_formation_strength(formation) end)
           [flag, card, 1.0]
       end
   end
@@ -188,29 +188,49 @@ defmodule GameHelper do
       |> Enum.max_by(&(Enum.at(&1, 2)))
   end
 
-  def get_move state do
-      plays = get_plays(state)
-      opponents_strength = get_opponent_strengths(state)
-      play = get_best_play_considering_hand_only(state, plays, opponents_strength)
-      if not is_nil(play) do
-          play
-      else
-          plays_probs = Enum.map(plays, fn [flag, card] ->get_play_with_probability(state, Enum.at(opponents_strength, flag), [flag, card]) end)
-          if Enum.empty?(plays_probs) do [1, {"color1", 1}, 0] else
-              [flag, card, prob] = Enum.max_by(plays_probs, &(Enum.at(&1, 2)))
-              if prob == 0  do
-                  hand_plays = get_best_formation_from_hand_only(state, plays)
-                  best_formation = get_highest_formation_from_plays(state, plays)
-                  if is_nil(best_formation) do
-                      hand_plays
-                  else
-                      Enum.max_by([best_formation, hand_plays], &(Enum.at(&1, 2)))
-                  end
-              else
-                  [flag, card, prob]
-              end
+  def get_actual_move nil, :hand_only, plays, state, opp_strengths do
+      get_best_play_considering_hand_only(state, plays, opp_strengths)
+  end
+
+  def get_actual_move nil, :probability, plays, state, opp_strengths do
+      plays_probs = Enum.map(plays, fn [flag, card] ->get_play_with_probability(state, Enum.at(opp_strengths, flag), [flag, card]) end)
+      if Enum.empty?(plays_probs) do
+          nil
+       else
+          [flag, card, prob] = Enum.max_by(plays_probs, &(Enum.at(&1, 2)))
+          if prob == 0  do
+              nil
+          else
+              [flag, card, prob]
           end
       end
+  end
+
+  def get_actual_move nil, :strongest_hand, plays, state, _opp_strengths do
+      hand_plays = get_best_formation_from_hand_only(state, plays)
+      best_formation = get_highest_formation_from_plays(state, plays)
+      if is_nil(best_formation) do
+          hand_plays
+      else
+          Enum.max_by([best_formation, hand_plays], &(Enum.at(&1, 2)))
+      end
+  end
+
+  def get_actual_move nil, :default, _plays, _state, _opp_strengths do
+     [1, {"color1", 1}, 0]
+  end
+
+  def get_actual_move play, _type, _plays, _state, _opp_strengths do
+       play
+  end
+
+  def get_move state do
+      plays = get_plays(state)
+      opp_strengths =  get_opponent_strengths(state)
+      get_actual_move(nil, :hand_only, plays, state, opp_strengths)
+      |> get_actual_move(:probability, plays, state, opp_strengths)
+      |> get_actual_move(:strongest_hand, plays, state, opp_strengths)
+      |> get_actual_move(:default, plays, state, opp_strengths)
   end
 
 
