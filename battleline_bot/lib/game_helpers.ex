@@ -109,8 +109,8 @@ defmodule GameHelper do
 
   def get_plays state do
       cartesian_product(get_playable_flags(state), state.hand)
-      |> Enum.reject(&(does_guarantee_other_player_win state, &1))
       |> Enum.uniq_by(fn [flag, card] -> [card, Enum.at(state.flag_cards, flag), Enum.at(get_flag_weights(state), flag)] end)
+      |> Enum.reject(&(does_guarantee_other_player_win state, &1))
   end
 
   defp does_guarantee_other_player_win state, [flag, card] do
