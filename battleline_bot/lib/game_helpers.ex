@@ -154,12 +154,8 @@ defmodule GameHelper do
   end
 
   def get_play_with_probability state, opponent_strength, [flag, card] do
-      if get_flag_cards(state, "north", flag) == [] and get_flag_cards(state, "south", flag) == 0do
-          [flag, card, 0.0]
-      else
-          possibilities = get_possibilities(get_flag_cards(state, state.direction, flag) ++[card], get_unplayed_cards(state))
-          [flag, card, get_probability(state, possibilities, opponent_strength, flag)]
-      end
+      possibilities = get_possibilities(get_flag_cards(state, state.direction, flag) ++[card], get_unplayed_cards(state))
+      [flag, card, get_probability(state, possibilities, opponent_strength, flag)]
   end
 
   def get_best_play_considering_hand_only state, plays, opponent_strengths do
